@@ -1,4 +1,4 @@
-const BASE_URL = "https://newgreyski82.conveyor.cloud/api/";
+const BASE_URL = "https://foundyellowdog22.conveyor.cloud/api/";
 
 // API endpoints
 const ENDPOINTS = {

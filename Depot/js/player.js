@@ -4,6 +4,7 @@ class MusicPlayer {
   constructor() {
     this.music = new Audio("Depot/audio/2.mp3");
     this.currentIndex = 0;
+    this.currentTrackIndex = 0;
     this.isPlaying = false;
     this.songs = [];
 
@@ -19,6 +20,12 @@ class MusicPlayer {
     this.title = document.getElementById("title");
     this.backBtn = document.getElementById("back");
     this.nextBtn = document.getElementById("next");
+    this.menuSong = document.querySelector('.Menu__song');
+    this.fireBodyMore = document.querySelector('.home__main-border-body-Gallery');
+    this.soundcloudVip = document.querySelector('.soundcloudVip');
+    this.prevBtn = document.getElementById('prevBtn');
+    this.nextBtn = document.getElementById('nextBtn');
+    this.soundcloudPlayerElement = document.getElementById('soundcloudPlayer');
 
     // Initialize
     this.initEventListeners();
@@ -41,38 +48,146 @@ class MusicPlayer {
     this.music.addEventListener("ended", () => this.onSongEnded());
 
     // Navigation buttons
-    this.backBtn.addEventListener("click", () => this.playPrevious());
-    this.nextBtn.addEventListener("click", () => this.playNext());
+    if(this.backBtn && this.nextBtn) {
+      this.backBtn.addEventListener("click", () => this.playPrevious());
+      this.nextBtn.addEventListener("click", () => this.playNext());
+    }
+
   }
 
   async initSongList() {
     // Fetch song list
     try {
       const res = await SoundCloud.getAll();
-      if(res && res.length > 0) {
-        this.songs = res; 
+      if (res && res.length > 0) {
+        this.songs = res;
       }
     } catch (error) {
       console.error("Error fetching song list:", error);
       return;
     }
 
-    // Update song list display
     Array.from(document.getElementsByClassName("organization")).forEach(
       (element, i) => {
-        console.log("hih", this.songs[i]);
-        element.getElementsByTagName("img")[0].src = this.songs[i].artworkUrl;
-        element.getElementsByTagName("h5")[0].innerHTML = this.songs[i].title;
+        element.getElementsByTagName("img")[0].src = this.songs[i]?.artworkUrl;
+        element.getElementsByTagName("h5")[0].innerHTML = this.songs[i]?.title;
       }
     );
 
-    // Add click event for each song
+    if (this.menuSong) {
+      this.menuSong.innerHTML = this.songs.map((song) => {
+        return `
+          <li class="Menu__song-item organization"> 
+              <div class="Menu__song-item-lightOutline">
+                <img src="${song.artworkUrl}" class="Menu__song-item-img" alt="">
+                  <div class="lightOutline__playbtn">
+                    <i class="lightOutline__playbtn-icon play_list bi bi-play-fill" id="${song.id}"></i>
+                  </div>
+              </div>                                  
+                                      
+              <h5 class="Menu__song-describe">
+                ${song.title}
+                <div class="Menu__song-describe-text">Alan Walker</div>
+              </h5>
+          </li>
+        `;
+      }).join('');
+    } else {
+      console.error('Menu song element not found');
+    }
+
+
+    if (this.fireBodyMore) {
+      this.fireBodyMore.innerHTML = this.songs.map((song) => {
+        return `
+                                         <div class="Gallery__slider-Panel-slide songItem organization ">
+                                            <div class="Gallery__slider-Panel-slide-title ">
+                                                <div class="playabletile__artwork">
+                                                    <!-- Thêm link bài hát -->
+                                                    <a href="#" class="playabletile__artwork-link">
+                                                    <div class="playabletile__img">
+                                                        <div class="playabletile__img-Outline">
+                                                            <img src="${song.artworkUrl}" class="playabletile__img-Outline-img" alt=""></img>
+                                                        </div>
+                                                    </div>  
+                                                    </a>
+                                                    <!--them nut icon play -->
+                                                    <div class="playabletile__artwork-playbtn">
+                                                        <i class="playabletile__artwork-playbtn-icon play_list bi bi-play-fill" id="12"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="playabletile__description">
+                                                    <h5 class="playabletile__description-heading">
+                                                         ${song.title}
+                                                    </h5>
+                                                     <span class="playabletile__description-usernameheading">
+                                                        Related tracks
+                                                     </span>
+                                                </div>
+                                            </div>
+                                        </div>                         
+        `; 
+      }) 
+    }
+
+    if (this.soundcloudVip) {
+      this.soundcloudVip.innerHTML = this.songs.map((song) => {
+        return `
+                                     <div class="player" id="player" style="padding: 12px">
+                                        <iframe
+                                          id="soundcloudPlayer"
+                                          width="100%"
+                                          height="166"
+                                          scrolling="no"
+                                          frameBorder="no"
+                                          allow="autoplay"
+                                          src="https://w.soundcloud.com/player/?url=${encodeURIComponent(song.streamUrl)}&auto_play=true"
+                                        ></iframe>
+                              
+                                        <div class="player__controls">
+                                          <button id="prevBtn">⏮ Trước</button>
+                                          <button id="nextBtn">⏭ Tiếp</button>
+                                        </div>
+                                      </div>
+        `;
+      }).join('');
+    } else {
+      console.error('Menu song element not found');
+    }
+
     Array.from(document.getElementsByClassName("play_list")).forEach(
       (element) => {
-        element.addEventListener("click", (e) => this.playSong(e.target.id));
+        element.addEventListener("click", (e) => {
+          this.playSong(e.target.id);
+        });
       }
     );
+
+    this.prevBtn.addEventListener('click', prevTrack);
+    this.nextBtn.addEventListener('click', nextTrack);
   }
+   loadTrack(index) {
+    const track = songs[index];
+    if (!track) return;
+
+    this.soundcloudPlayerElement.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(track.streamUrl)}&auto_play=true`;
+  }
+   selectTrack(index) {
+    this.currentTrackIndex = index;
+    loadTrack(this.currentTrackIndex);
+  }
+
+   nextTrack() {
+    this.currentTrackIndex = (this.currentTrackIndex + 1) % this.songs.length;
+    loadTrack(this.currentTrackIndex);
+  }
+
+  // Quay lại bài trước đó
+   prevTrack() {
+    currentTracthis.currentTrackIndexkIndex = (this.currentTrackIndex - 1 + this.songs.length) % this.songs.length;
+    loadTrack(this.currentTrackIndex);
+  }
+
 
   togglePlay() {
     if (this.music.paused || this.music.currentTime <= 0) {
@@ -105,14 +220,10 @@ class MusicPlayer {
     document.getElementById(id).classList.remove("bi-play-circle-fill");
     document.getElementById(id).classList.add("bi-pause-circle-fill");
 
-    this.music.src = `Depot/audio/${id}.mp3`;
-    this.bossPoster.src = `Depot/image/${id}.jpg`;
-
-    console.log( "vip", this.songs);
-
-    const songTitle = this.songs.filter((ele) => ele.id == id);
-    this.title.innerHTML = songTitle[0].title;
-
+    const songItem = this.songs.find((ele) => ele.id == id);
+    this.music.src = songItem?.streamUrl;
+    this.bossPoster.src = songItem?.artworkUrl;
+    this.title.innerHTML = songItem?.title;
     this.play();
   }
 
