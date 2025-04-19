@@ -1,4 +1,5 @@
 import { SoundCloud } from "./api.js";
+import { songsLocal, artistLocal } from "./songs.js";
 
 class MusicPlayer {
   constructor() {
@@ -21,10 +22,11 @@ class MusicPlayer {
     this.backBtn = document.getElementById("back");
     this.nextBtn = document.getElementById("next");
     this.menuSong = document.querySelector('.Menu__song');
-    this.fireBodyMore = document.querySelector('.home__main-border-body-Gallery');
-    this.soundcloudVip = document.querySelector('.soundcloudVip');
+    this.chillList = document.querySelector('.chill-vip');
+    this.artistList = document.querySelector('.artist-vip');
+    this.fireBodyMore = document.querySelector('.like-love');
     this.prevBtn = document.getElementById('prevBtn');
-    this.nextBtn = document.getElementById('nextBtn');
+    this.nextVipBtn = document.getElementById('nextBtn');
     this.soundcloudPlayerElement = document.getElementById('soundcloudPlayer');
 
     // Initialize
@@ -56,11 +58,11 @@ class MusicPlayer {
   }
 
   async initSongList() {
-    // Fetch song list
     try {
       const res = await SoundCloud.getAll();
       if (res && res.length > 0) {
         this.songs = res;
+        this.loadTrack(this.currentTrackIndex);
       }
     } catch (error) {
       console.error("Error fetching song list:", error);
@@ -75,13 +77,13 @@ class MusicPlayer {
     );
 
     if (this.menuSong) {
-      this.menuSong.innerHTML = this.songs.map((song) => {
+      this.menuSong.innerHTML = this.songs.map((song, index) => {
         return `
           <li class="Menu__song-item organization"> 
               <div class="Menu__song-item-lightOutline">
                 <img src="${song.artworkUrl}" class="Menu__song-item-img" alt="">
                   <div class="lightOutline__playbtn">
-                    <i class="lightOutline__playbtn-icon play_list bi bi-play-fill" id="${song.id}"></i>
+                    <i class="lightOutline__playbtn-icon play_list bi bi-play-fill" id="${index}"></i>
                   </div>
               </div>                                  
                                       
@@ -96,9 +98,8 @@ class MusicPlayer {
       console.error('Menu song element not found');
     }
 
-
     if (this.fireBodyMore) {
-      this.fireBodyMore.innerHTML = this.songs.map((song) => {
+      this.fireBodyMore.innerHTML = this.songs.map((song, index) => {
         return `
                                          <div class="Gallery__slider-Panel-slide songItem organization ">
                                             <div class="Gallery__slider-Panel-slide-title ">
@@ -113,7 +114,7 @@ class MusicPlayer {
                                                     </a>
                                                     <!--them nut icon play -->
                                                     <div class="playabletile__artwork-playbtn">
-                                                        <i class="playabletile__artwork-playbtn-icon play_list bi bi-play-fill" id="12"></i>
+                                                        <i class="playabletile__artwork-playbtn-icon play_list bi bi-play-fill" id=${index}></i>
                                                     </div>
                                                 </div>
                                                 <div class="playabletile__description">
@@ -130,62 +131,109 @@ class MusicPlayer {
       }) 
     }
 
-    if (this.soundcloudVip) {
-      this.soundcloudVip.innerHTML = this.songs.map((song) => {
+    Array.from(document.getElementsByClassName("play_list")).forEach(
+      (element) => {
+        element.addEventListener("click", (e) => {
+          this.selectTrack(e.target.id);
+        });
+      }
+    );
+    
+    this.prevBtn.addEventListener('click', this.prevTrack.bind(this));
+    this.nextVipBtn.addEventListener('click', this.nextTrack.bind(this));
+
+
+    if(this.chillList) {
+      this.chillList.innerHTML = songsLocal.map((song) => {
         return `
-                                     <div class="player" id="player" style="padding: 12px">
-                                        <iframe
-                                          id="soundcloudPlayer"
-                                          width="100%"
-                                          height="166"
-                                          scrolling="no"
-                                          frameBorder="no"
-                                          allow="autoplay"
-                                          src="https://w.soundcloud.com/player/?url=${encodeURIComponent(song.streamUrl)}&auto_play=true"
-                                        ></iframe>
-                              
-                                        <div class="player__controls">
-                                          <button id="prevBtn">⏮ Trước</button>
-                                          <button id="nextBtn">⏭ Tiếp</button>
+                                        <div class="Gallery__slider-Panel-slide songItem organization ">
+                                            <div class="Gallery__slider-Panel-slide-title ">
+                                                <div class="playabletile__artwork">
+                                                    <!-- Thêm link bài hát -->
+                                                    <a href="#" class="playabletile__artwork-link">
+                                                    <div class="playabletile__img">
+                                                        <div class="playabletile__img-Outline">
+                                                            <img src="${song.poster}" class="playabletile__img-Outline-img" alt=""></img>
+                                                        </div>
+                                                    </div>  
+                                                    </a>
+                                                    <!--them nut icon play -->
+                                                    <div class="playabletile__artwork-playbtn">
+                                                        <i class="playabletile__artwork-playbtn-icon play_list-local bi bi-play-fill" id="${song.id}"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="playabletile__description">
+                                                    <h5 class="playabletile__description-heading">
+                                                       ${song.songName}
+                                                    </h5>
+                                                     <span class="playabletile__description-usernameheading">
+                                                        Top tracks
+                                                     </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                      </div>
-        `;
-      }).join('');
-    } else {
-      console.error('Menu song element not found');
+            `
+      })
     }
 
-    Array.from(document.getElementsByClassName("play_list")).forEach(
+    if(this.artistList) {
+      this.artistList.innerHTML = artistLocal.map((artist) => {
+         return `
+                                          <div class="Gallery__slider-Panel-slide songItem organization">
+                                            <div class="Gallery__slider-Panel-slide-title ">
+                                                <div class="playabletile__artwork">
+                                                    <!-- Thêm link bài hát -->
+                                                    <a href="#" class="playabletile__artwork-link">
+                                                    <div class="playabletile__img">
+                                                        <div class="playabletile__img-Outline">
+                                                            <img src="${artist.poster}" class="playabletile__img-Outline-img" alt=""></img>
+                                                        </div>
+                                                    </div>  
+                                                    </a>
+                                                   
+                                                </div>
+                                                <div class="playabletile__description">
+                                                    <h5 class="playabletile__description-heading">
+                                                        ${artist.songName}
+                                                    </h5>
+                                                     <span class="playabletile__description-usernameheading">
+                                                        Top tracks
+                                                     </span>
+                                                </div>
+                                            </div>
+                                        </div>`; 
+      }) 
+    }
+
+    Array.from(document.getElementsByClassName("play_list-local")).forEach(
       (element) => {
         element.addEventListener("click", (e) => {
           this.playSong(e.target.id);
         });
       }
     );
-
-    this.prevBtn.addEventListener('click', prevTrack);
-    this.nextBtn.addEventListener('click', nextTrack);
   }
-   loadTrack(index) {
-    const track = songs[index];
-    if (!track) return;
 
-    this.soundcloudPlayerElement.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(track.streamUrl)}&auto_play=true`;
-  }
-   selectTrack(index) {
+  selectTrack(index) {
     this.currentTrackIndex = index;
-    loadTrack(this.currentTrackIndex);
+    this.loadTrack(this.currentTrackIndex);
+  }
+
+   loadTrack(index) {
+    const track = this.songs[index];
+    if (!track) return;
+    this.soundcloudPlayerElement.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(track.streamUrl)}&auto_play=true`;
   }
 
    nextTrack() {
     this.currentTrackIndex = (this.currentTrackIndex + 1) % this.songs.length;
-    loadTrack(this.currentTrackIndex);
+    this.loadTrack(this.currentTrackIndex);
   }
 
-  // Quay lại bài trước đó
+
    prevTrack() {
-    currentTracthis.currentTrackIndexkIndex = (this.currentTrackIndex - 1 + this.songs.length) % this.songs.length;
-    loadTrack(this.currentTrackIndex);
+    this.currentTrackIndex = (this.currentTrackIndex - 1 + this.songs.length) % this.songs.length;
+    this.loadTrack(this.currentTrackIndex);
   }
 
 
@@ -220,10 +268,10 @@ class MusicPlayer {
     document.getElementById(id).classList.remove("bi-play-circle-fill");
     document.getElementById(id).classList.add("bi-pause-circle-fill");
 
-    const songItem = this.songs.find((ele) => ele.id == id);
-    this.music.src = songItem?.streamUrl;
-    this.bossPoster.src = songItem?.artworkUrl;
-    this.title.innerHTML = songItem?.title;
+    const songItem = songsLocal.find((ele) => ele.id == id);
+    this.music.src = `Depot/audio/${id}.mp3`;
+    this.bossPoster.src = songItem?.poster;
+    this.title.innerHTML = songItem?.songName;
     this.play();
   }
 
@@ -266,7 +314,7 @@ class MusicPlayer {
 
   playNext() {
     this.currentIndex = Number(this.currentIndex) + 1;
-    if (this.currentIndex > this.songs.length) {
+    if (this.currentIndex > songsLocal.length) {
       this.currentIndex = 1;
     }
     this.playSong(this.currentIndex);
@@ -275,7 +323,7 @@ class MusicPlayer {
   playPrevious() {
     this.currentIndex = Number(this.currentIndex) - 1;
     if (this.currentIndex < 1) {
-      this.currentIndex = this.songs.length;
+      this.currentIndex = this.songsLocal.length;
     }
     this.playSong(this.currentIndex);
   }

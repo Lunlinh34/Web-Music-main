@@ -1,4 +1,4 @@
- export const songs = [
+ export const songsLocal = [
     {
         id: '1',
         songName: ` Chuyện Đôi Ta <br>
@@ -98,6 +98,9 @@
         songName: `Last Christmas - George Michael`,
         poster: "Depot/image/19.jpg",
     },
+];
+
+export const artistLocal = [
     {
         id:'20',
         songName: `Think Of You - Huynh Huu Khang`,

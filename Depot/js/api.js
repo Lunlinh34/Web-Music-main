@@ -1,10 +1,10 @@
-const BASE_URL = "https://foundyellowdog22.conveyor.cloud/api/";
+const BASE_URL = "https://foundsparklyphone81.conveyor.cloud/api/";
 
 // API endpoints
 const ENDPOINTS = {
   LOGIN: "auth/login",
   REGISTER: "auth/register",
-  SOUNDCLOUD: "soundcloud/vietnamese-songs",
+  SOUNDCLOUD: "SoundCloudStorage/tracks",
 };
 
 // API configuration
