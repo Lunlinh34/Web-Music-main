@@ -4,7 +4,7 @@ const BASE_URL = "https://foundsparklyphone81.conveyor.cloud/api/";
 const ENDPOINTS = {
   LOGIN: "auth/login",
   REGISTER: "auth/register",
-  SOUNDCLOUD: "SoundCloudStorage/tracks",
+  SOUNDCLOUD: "soundcloud/vietnamese-songs",
 };
 
 // API configuration
@@ -12,7 +12,7 @@ const API_CONFIG = {
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
-    'Authorization': 'Bearer ' + localStorage.getItem("token"),
+    Authorization: "Bearer " + sessionStorage.getItem("token"),
   },
   timeout: 10000,
 };
@@ -39,8 +39,11 @@ class BaseAPI {
   }
 
   // Read
-  async getAll() {
+  async getAll(token) {
     try {
+      if (token) {
+        API_CONFIG.headers.Authorization = "Bearer " + token;
+      }
       const response = await fetch(`${BASE_URL}${this.endpoint}`, {
         method: "GET",
         ...API_CONFIG,

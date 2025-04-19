@@ -57,9 +57,9 @@ class MusicPlayer {
 
   }
 
-  async initSongList() {
+  async initSongList(token) {
     try {
-      const res = await SoundCloud.getAll();
+      const res = await SoundCloud.getAll(token);
       if (res && res.length > 0) {
         this.songs = res;
         this.loadTrack(this.currentTrackIndex);

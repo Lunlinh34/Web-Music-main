@@ -1,9 +1,11 @@
 import { LoginAPI, RegisterAPI } from "./api.js";
+import { player } from "./player.js";
 
 class Authentication {
   constructor() {
     // DOM Elements
     this.loginBtn = document.querySelector(".js-header__navbar-item");
+    this.logoutBtn = document.querySelector(".js-header__navbar-item-logout");
     this.createBtn = document.querySelector(".js-auth-form__switch-btn");
     this.modalAuthForms = document.querySelector(".js-auth-forms");
     this.modal = document.querySelector(".js-modal");
@@ -16,8 +18,11 @@ class Authentication {
     this.initFormHandlers();
   }
 
-  initEventListeners() {
+ initEventListeners () {
     // Modal control
+    this.isToken = false;
+
+    this.logoutBtn.addEventListener("click", () => this.logout());
     this.loginBtn.addEventListener("click", () => this.showSignIn());
     this.createBtn.addEventListener("click", () => this.showCreate());
     this.modalClose.addEventListener("click", () => this.hideSignIn());
@@ -30,6 +35,29 @@ class Authentication {
       this.blockEvent(event)
     );
     this.backSignIn.addEventListener("click", () => this.backToSignIn());
+
+    const token = sessionStorage.getItem("token");
+    if (token && token !== "") {
+      this.logoutBtn.style.display = "block";
+      this.loginBtn.style.display = "none";
+      this.isToken = true;
+      this.hideSignIn();
+    } else {
+      console.log("vip", token);
+      this.logoutBtn.style.display = "none";
+      this.loginBtn.style.display = "block";
+      this.isToken = false;
+      this.showSignIn();
+    }
+  }
+
+
+  logout() {
+    sessionStorage.removeItem("token");
+    this.isToken = false;
+    this.logoutBtn.style.display = "none";
+    this.loginBtn.style.display = "block";
+    this.showSignIn();
   }
 
   showSignIn() {
@@ -44,7 +72,12 @@ class Authentication {
   }
 
   hideSignIn() {
-    this.modal.classList.remove("open");
+    if(this.isToken) {
+      this.modal.classList.remove("open");
+      return;
+    } else {
+      return;
+    }
   }
 
   blockEvent(event) {
@@ -70,16 +103,19 @@ class Authentication {
           try {
             const response = await LoginAPI.create({ email, password });
             if (response?.token) {
-              console.log("vao");
-              localStorage.setItem("token", response.token);
+              sessionStorage.setItem("token", response.token);
+              player.initEventListeners();
+              player.initSongList(response.token);
               alert("Login successful! 🎉");
+              this.isToken = true;
+              this.logoutBtn.style.display = "block";
+              this.loginBtn.style.display = "none";
               this.hideSignIn();
+             
             } else {
-              console.log("vao 1");
               alert("Login failed: " + data.message);
             }
           } catch (error) {
-            console.log("vao 2");
             console.error("Error:", error);
             alert("Failed to connect to the server!");
           }
